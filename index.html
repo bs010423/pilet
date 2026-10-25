@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Otopark Yer Tutucu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        /* Üst Bölüm: Fonksiyon Alanı (%40) */
+        .status-section {
+            padding: 30px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .status-title {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        .parking-spot {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        /* Alt Bölüm: Reklam Alanı (%60) */
+        .ad-section {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: #f8f9fa;
+        }
+        .ad-label {
+            font-size: 11px;
+            color: #aaa;
+            align-self: flex-start;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ad-banner {
+            width: 100%;
+            height: 250px;
+            background-color: #ddd;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 2px dashed #bbb;
+            position: relative;
+        }
+        .ad-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .ad-text {
+            position: absolute;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- FONKSİYON ALANI -->
+    <div class="status-section">
+        <div id="status-text" class="status-title">Park Yeriniz Kaydediliyor...</div>
+        <div id="spot-display" class="parking-spot">---</div>
+        <div>
+            <button class="btn" onclick="checkSavedSpot()">Kayıtlı Yerimi Göster</button>
+        </div>
+    </div>
+
+    <!-- REKLAM ALANI -->
+    <div class="ad-section">
+        <div class="ad-label">Sponsorlu Reklam</div>
+        <div class="ad-banner">
+            <!-- Gerçek bir reklam görseli gelene kadar yer tutucu (placeholder) görsel kullandık -->
+            <img src="https://picsum.photos" alt="Reklam Görseli">
+            <div class="ad-text">
+                <strong>Kahve Dünyası'nda %20 İndirim!</strong><br>
+                Bu ekranı kasada göstererek indirimden faydalanın.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. URL'den "yer" parametresini okuyan fonksiyon
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // 2. Sayfa yüklendiğinde çalışacak ana mantık
+    window.onload = function() {
+        const currentSpot = getQueryParam('yer'); // URL'deki ?yer= değerini alır
+
+        if (currentSpot) {
+            // Eğer URL'de park yeri varsa (NFC'den ilk kez geliniyorsa) tarayıcıya kaydet
+            localStorage.setItem('savedParkingSpot', currentSpot);
+            document.getElementById('status-text').innerText = "Park Yeriniz Başarıyla Kaydedildi! 🎉";
+            document.getElementById('spot-display').innerText = currentSpot;
+        } else {
+            // Eğer URL boşsa (Kullanıcı otoparka geri döndüğünde siteyi direkt açtıysa) hafızayı kontrol et
+            const savedSpot = localStorage.getItem('savedParkingSpot');
+            if (savedSpot) {
+                document.getElementById('status-text').innerText = "Hoş Geldiniz! Kayıtlı Yeriniz:";
+                document.getElementById('spot-display').innerText = savedSpot;
+            } else {
+                document.getElementById('status-text').innerText = "Kayıtlı park yeri bulunamadı.";
+                document.getElementById('spot-display').innerText = "???";
+            }
+        }
+    };
+
+    // 3. "Kayıtlı Yerimi Göster" butonuna basıldığında tetiklenen fonksiyon
+    function checkSavedSpot() {
+        const savedSpot = localStorage.getItem('savedParkingSpot');
+        if (savedSpot) {
+            alert("Arabanız şu an burada: " + savedSpot);
+        } else {
+            alert("Henüz bir park yeri kaydetmediniz. Lütfen otoparktaki bir NFC etiketine dokunun.");
+        }
+    }
+</script>
+
+</body>
+</html>
